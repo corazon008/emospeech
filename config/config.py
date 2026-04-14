@@ -120,16 +120,16 @@ class TrainConfig:
     num_workers: int = 1
     test_wav_files_directory: Path = Path(base_dir) / "app/data/wav"
     test_mos_files_directory: Path = Path(base_dir) / "app/data/mos"
-    total_training_steps: int = 100000
+    total_training_steps: int = 234*2*    2 # 234 (step for 1 epochs) * 2 (dont know why put nb step is divided by 2 somewhere) * nb epochs
     val_each_epoch: int = 20
     val_audio_log_each_step: int = (
         1  # if greater than one will log audio each <n> step, set to save storage
     )
 
     # Test / Inference
-    testing_checkpoint: str = (
-        Path(base_dir)
-        / "app/data/emospeech.ckpt"  # "data/deepvk_large_checkpoint/epoch=1079-step=127440.ckpt"
+    testing_checkpoint: Path = (
+        Path(base_dir) / "app/data/checkpoints/emospeech.ckpt"
+        #/ "app/data/emospeech.ckpt"  # "data/deepvk_large_checkpoint/epoch=1079-step=127440.ckpt"
     )
     audio_save_path: str = (
         Path(base_dir)
