@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
+base_dir = Path(__file__).parent.parent
+
 
 @dataclass
 class TrainConfig:
@@ -19,10 +21,10 @@ class TrainConfig:
     window_length: int = 768
     n_mel_channels: int = 80
 
-    raw_data_path: Path = "/app/data/data/ssw_esd"
-    val_ids_path: Path = "/app/data/val_ids.txt"
-    test_ids_path: Path = "/app/data/test_ids.txt"
-    preprocessed_data_path: Path = Path("/app/data/preprocessed")
+    raw_data_path: Path = Path(base_dir) / "app/data/data/ssw_esd"
+    val_ids_path: Path = Path(base_dir) / "app/data/val_ids.txt"
+    test_ids_path: Path = Path(base_dir) / "app/data/test_ids.txt"
+    preprocessed_data_path: Path = Path(base_dir) / "app/data/preprocessed"
 
     egemap_feature_names: Tuple[str] = (
         "F0semitoneFrom27.5Hz_sma3nz_percentile50.0",
@@ -35,19 +37,25 @@ class TrainConfig:
     )
 
     # Vocoder
-    vocoder_checkpoint_path: str = "/app/data/g_01800000"
+    vocoder_checkpoint_path: str = Path(base_dir) / "app/data/g_01800000"
     istft_resblock_kernel_sizes: Tuple[int] = (3, 7, 11)
     istft_upsample_rates: Tuple[int] = (6, 8)
     istft_upsample_initial_channel: int = 512
     istft_upsample_kernel_sizes: Tuple[int] = (16, 16)
-    istft_resblock_dilation_sizes: Tuple[Tuple[int]] = ((1, 3, 5), (1, 3, 5), (1, 3, 5))
+    istft_resblock_dilation_sizes: Tuple[Tuple[int]] = (
+        (1, 3, 5),
+        (1, 3, 5),
+        (1, 3, 5),
+    )
     gen_istft_n_fft: int = 16
     gen_istft_hop_size: int = 4
 
     # Transformer Encoder
     padding_index: int = 0
     max_seq_len: int = 2000
-    phones_mapping_path: Path = Path("/app/data/preprocessed/phones.json")
+    phones_mapping_path: Path = (
+        Path(base_dir) / "app/data/preprocessed/phones.json"
+    )
     transformer_encoder_hidden: int = 512
     transformer_encoder_layer: int = 9
     transformer_encoder_head: int = 2
@@ -66,7 +74,9 @@ class TrainConfig:
     stack_speaker_with_emotion_embedding: bool = (
         True  # if True speaker and emotion embedding would be concatenated
     )
-    n_egemap_features: int = 2  # 0, ... 7, could be more than 7 if adjust preprocessing
+    n_egemap_features: int = (
+        2  # 0, ... 7, could be more than 7 if adjust preprocessing
+    )
     conditional_layer_norm: bool = True  # if False Layer Norm applied
     conditional_cross_attention: bool = (
         True  # if False emotion and speaker embeddings added to the encoder output
@@ -94,21 +104,22 @@ class TrainConfig:
     n_speakers: int = 10
     train_batch_size: int = 64
     val_batch_size: int = 32
-    device: str = "cuda"
+    device: str = "cpu"
 
     # Train
     seed: int = 3
     precision: str = 32
     matmul_precision: str = "high"
-    lightning_checkpoint_path: str = (
-        "/app/data/checkpoints/emospeech.ckpt"  # directory to save checkpoints
-    )
+    lightning_checkpoint_path: Path = (
+        Path(base_dir) / "app/data/checkpoints/emospeech.ckpt"
+    )  # directory to save checkpoints
+
     train_from_checkpoint: Optional[str] = (
         None  # filename in <lightning_checkpoint_path> directory
     )
     num_workers: int = 1
-    test_wav_files_directory: str = "/app/data/wav"
-    test_mos_files_directory: str = "/app/data/mos"
+    test_wav_files_directory: Path = Path(base_dir) / "app/data/wav"
+    test_mos_files_directory: Path = Path(base_dir) / "app/data/mos"
     total_training_steps: int = 100000
     val_each_epoch: int = 20
     val_audio_log_each_step: int = (
@@ -117,13 +128,16 @@ class TrainConfig:
 
     # Test / Inference
     testing_checkpoint: str = (
-        "/app/data/emospeech.ckpt"  # "data/deepvk_large_checkpoint/epoch=1079-step=127440.ckpt"
+        Path(base_dir)
+        / "app/data/emospeech.ckpt"  # "data/deepvk_large_checkpoint/epoch=1079-step=127440.ckpt"
     )
     audio_save_path: str = (
-        "/app/data/deepvk_test"  # directory where synthesised wav files will be saved
+        Path(base_dir)
+        / "app/data/deepvk_test"  # directory where synthesised wav files will be saved
     )
     nisqa_save_path: str = (
-        "/app/data/deepvk_test"  # directory where nisqa output files will be saved
+        Path(base_dir)
+        / "app/data/deepvk_test"  # directory where nisqa output files will be saved
     )
     limit_generation: int = (
         None  # if specified, will stop and do not iterate through all samples in testing loader
@@ -131,7 +145,9 @@ class TrainConfig:
     compute_nisqa_on_test: bool = (
         True  # is True will write NISQA scores and stds to test.log file
     )
-    phones_path: str = "/app/data/phones.json"  # path to phones dictionary
+    phones_path: str = (
+        Path(base_dir) / "app/data/phones.json"
+    )  # path to phones dictionary
 
     # Optimizer
     optimizer_grad_clip_val: float = 1.0
@@ -152,10 +168,10 @@ class TrainConfig:
         False  # if true will log data to the last wandb run in the specified project
     )
     strategy: str = "ddp_find_unused_parameters_true"
-    wandb_offline: bool = False
+    wandb_offline: bool = True
     wandb_progress_bar_refresh_rate: int = 1
     wandb_log_every_n_steps: int = 1
-    devices: Union[tuple, int] = (0, 1, 2, 3)
+    devices: Union[tuple, int] = None # (0, 1, 2, 3)
     limit_val_batches: Optional[int] = (
         4  # val_batch_size * limit_val_batches samples will be logged to wandb and saved locally each val step
     )

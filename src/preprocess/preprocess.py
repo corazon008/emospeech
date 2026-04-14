@@ -74,7 +74,7 @@ class Preprocessor:
         :param filename: str, .TextGrid filename
         :return: None
         """
-        basename = filename[:-9].split("/")[-1]
+        basename = Path(filename).stem #  filename[:-9].split("/")[-1]
         speaker_idx, filename_idx, emotion_id = basename.split("_")
 
         tg_path = Path(self.config.raw_data_path, basename).with_suffix(".TextGrid")
