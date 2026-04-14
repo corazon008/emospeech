@@ -29,7 +29,7 @@ def load_checkpoint(filepath):
     logger.info(f"Checking {filepath} is file...")
     assert os.path.isfile(filepath)
     logger.info(f"Loading {filepath}...")
-    checkpoint_dict = torch.load(filepath)
+    checkpoint_dict = torch.load(filepath, map_location=torch.device('cpu'))
     logger.info("Complete.")
     return checkpoint_dict
 
