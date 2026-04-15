@@ -451,20 +451,20 @@ class FastSpeechLightning(LightningModule):
         if mode == "val":
             wav_files_directory_path = (
                 Path(self.val_wav_files_directory)
-                / f"{self.current_epoch} / {self.global_rank}"
+                / f"{self.current_epoch}/{self.global_rank}"
             )
             self.cur_mos_files_directory_path = (
                 Path(self.val_mos_files_directory)
-                / f"{self.current_epoch} / {self.global_rank}"
+                / f"{self.current_epoch}/{self.global_rank}"
             )
         else:
             wav_files_directory_path = (
                 Path(self.test_wav_files_directory)
-                / f"{self.current_epoch} / {self.global_rank}"
+                / f"{self.current_epoch}/{self.global_rank}"
             )
             self.cur_mos_files_directory_path = (
                 Path(self.test_mos_files_directory)
-                / f"{self.current_epoch} / {self.global_rank}"
+                / f"{self.current_epoch}/{self.global_rank}"
             )
 
         Path(wav_files_directory_path).mkdir(exist_ok=True, parents=True)
@@ -496,15 +496,17 @@ class FastSpeechLightning(LightningModule):
                     ground_truth_wav.detach().cpu().numpy(),
                     self.config.sample_rate,
                 )
-                self.logger.experiment.log(
-                    {
-                        f"{mode}_audio/{speaker_id}/original/{tag}": wandb.Audio(
-                            ground_truth_wav,
-                            caption=f"original_{tag}",
-                            sample_rate=self.config.sample_rate,
-                        )
-                    }
-                )
+
+                if hasattr(self.logger, "experiment") and hasattr(self.logger.experiment, "log"):
+                    self.logger.experiment.log(
+                        {
+                            f"{mode}_audio/{speaker_id}/original/{tag}": wandb.Audio(
+                                ground_truth_wav,
+                                caption=f"original_{tag}",
+                                sample_rate=self.config.sample_rate,
+                            )
+                        }
+                    )
 
                 gt_mel_no_padding = batch["mels"][i, : batch["mel_lens"][i]]
                 reconstructed_wav = synthesize_wav_from_mel(
@@ -522,15 +524,17 @@ class FastSpeechLightning(LightningModule):
                     reconstructed_wav,
                     self.config.sample_rate,
                 )
-                self.logger.experiment.log(
-                    {
-                        f"{mode}_audio/{speaker_id}/reconstructed/{tag}": wandb.Audio(
-                            reconstructed_wav,
-                            caption=f"reconstructed_{tag}",
-                            sample_rate=self.config.sample_rate,
-                        )
-                    }
-                )
+
+                if hasattr(self.logger, "experiment") and hasattr(self.logger.experiment, "log"):
+                    self.logger.experiment.log(
+                        {
+                            f"{mode}_audio/{speaker_id}/reconstructed/{tag}": wandb.Audio(
+                                reconstructed_wav,
+                                caption=f"reconstructed_{tag}",
+                                sample_rate=self.config.sample_rate,
+                            )
+                        }
+                    )
 
             predicted_mel_len = output_dict_no_tf["mel_len"][i]
             predicted_mel_no_padding = output_dict_no_tf["predicted_mel"][
@@ -560,14 +564,15 @@ class FastSpeechLightning(LightningModule):
                         mode == "test"
                         or self.global_step % self.config.val_audio_log_each_step == 0
                     ):
-                        self.logger.experiment.log(
-                            {
-                                f"{mode}_audio/{speaker_id}/generated/{tag}": wandb.Audio(
-                                    generated_wav,
-                                    caption=f"generated_{tag}",
-                                    sample_rate=self.config.sample_rate,
-                                )
-                            }
-                        )
+                        if hasattr(self.logger, "experiment") and hasattr(self.logger.experiment, "log"):
+                            self.logger.experiment.log(
+                                {
+                                    f"{mode}_audio/{speaker_id}/generated/{tag}": wandb.Audio(
+                                        generated_wav,
+                                        caption=f"generated_{tag}",
+                                        sample_rate=self.config.sample_rate,
+                                    )
+                                }
+                            )
 
         return logs_dict
