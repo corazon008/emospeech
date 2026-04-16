@@ -103,13 +103,13 @@ class TrainConfig:
     multi_emotion: bool = True
     n_emotions: int = 5
     n_speakers: int = 10
-    train_batch_size: int = 64
-    val_batch_size: int = 32
-    device: str = "cpu"
+    train_batch_size: int = 8
+    val_batch_size: int = 8
+    device: str = "cuda"
 
     # Train
     seed: int = 3
-    precision: str = 32
+    precision: str = "16-mixed"
     matmul_precision: str = "high"
     lightning_checkpoint_path: Path = (
         Path(base_dir) / "app/data/checkpoints/emospeech.ckpt"
@@ -118,11 +118,11 @@ class TrainConfig:
     train_from_checkpoint: Optional[str] = (
         None  # filename in <lightning_checkpoint_path> directory
     )
-    num_workers: int = os.cpu_count() - 1 if os.cpu_count() > 1 else 0
+    num_workers: int = 1
     test_wav_files_directory: Path = Path(base_dir) / "app/data/wav"
     test_mos_files_directory: Path = Path(base_dir) / "app/data/mos"
     total_training_steps: int = (
-        4  # 234*2*    2 # 234 (step for 1 epochs) * 2 (dont know why put nb step is divided by 2 somewhere) * nb epochs
+        400 # 234*2*    2 # 234 (step for 1 epochs) * 2 (dont know why put nb step is divided by 2 somewhere) * nb epochs
     )
     val_each_epoch: int = 20
     val_audio_log_each_step: int = (
@@ -171,11 +171,11 @@ class TrainConfig:
     resume_wandb_run: bool = (
         False  # if true will log data to the last wandb run in the specified project
     )
-    strategy: str = "ddp_find_unused_parameters_true"
+    strategy: str = "auto"
     wandb_offline: bool = True
     wandb_progress_bar_refresh_rate: int = 1
     wandb_log_every_n_steps: int = 1
-    devices: Union[tuple, int] = None  # (0, 1, 2, 3)
+    devices: Union[tuple, int] = 0 # (0, 1, 2, 3)
     limit_val_batches: Optional[int] = (
         4  # val_batch_size * limit_val_batches samples will be logged to wandb and saved locally each val step
     )

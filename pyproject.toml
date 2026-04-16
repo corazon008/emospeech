@@ -24,42 +24,27 @@ dependencies = [
     "soundfile>=0.12.1",
     "tgt>=1.4.4",
     "torch>=2.8.0",
+    "torch>=2.11.0",
     "torchaudio>=2.11.0",
-    "torchcodec>=0.9.1",
-    "torchmetrics>=0.11.4",
-    "torchvision>=0.23.0",
+    "torchvision>=0.26.0",
     "tqdm>=4.64.1",
     "wandb>=0.16",
+    "torchcodec>=0.11.1",
 ]
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
-    { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cu130" },
 ]
 torchaudio = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
-    { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cu130" },
 ]
 torchvision = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
-    { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cu130" },
 ]
-torchcodec = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
-]
-
-
-[[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
 
 [[tool.uv.index]]
 name = "pytorch-cu130"
 url = "https://download.pytorch.org/whl/cu130"
+#default = true
 explicit = true
-
-
-[tool.uv.extra-build-dependencies]
-      pathtools = ["imp"]
