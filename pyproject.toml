@@ -47,7 +47,6 @@ torchvision = [
 ]
 torchcodec = [
     { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
-    { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
 ]
 
 
