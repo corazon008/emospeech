@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path
 
 # set working dir to app/data
-wd = Path(__file__).parent / "app" / "data1"
+wd = Path(__file__).parent / "app" / "data"
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
 
