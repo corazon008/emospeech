@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
+import os
 
 base_dir = Path(__file__).parent.parent
 
@@ -117,10 +118,12 @@ class TrainConfig:
     train_from_checkpoint: Optional[str] = (
         None  # filename in <lightning_checkpoint_path> directory
     )
-    num_workers: int = 1
+    num_workers: int = os.cpu_count() - 1 if os.cpu_count() > 1 else 0
     test_wav_files_directory: Path = Path(base_dir) / "app/data/wav"
     test_mos_files_directory: Path = Path(base_dir) / "app/data/mos"
-    total_training_steps: int = 234*2*    2 # 234 (step for 1 epochs) * 2 (dont know why put nb step is divided by 2 somewhere) * nb epochs
+    total_training_steps: int = (
+        4  # 234*2*    2 # 234 (step for 1 epochs) * 2 (dont know why put nb step is divided by 2 somewhere) * nb epochs
+    )
     val_each_epoch: int = 20
     val_audio_log_each_step: int = (
         1  # if greater than one will log audio each <n> step, set to save storage
@@ -128,8 +131,9 @@ class TrainConfig:
 
     # Test / Inference
     testing_checkpoint: Path = (
-        Path(base_dir) / "app/data/checkpoints/emospeech.ckpt"
-        #/ "app/data/emospeech.ckpt"  # "data/deepvk_large_checkpoint/epoch=1079-step=127440.ckpt"
+        Path(base_dir)
+        / "app/data/checkpoints/emospeech.ckpt"
+        # / "app/data/emospeech.ckpt"  # "data/deepvk_large_checkpoint/epoch=1079-step=127440.ckpt"
     )
     audio_save_path: str = (
         Path(base_dir)
@@ -171,7 +175,7 @@ class TrainConfig:
     wandb_offline: bool = True
     wandb_progress_bar_refresh_rate: int = 1
     wandb_log_every_n_steps: int = 1
-    devices: Union[tuple, int] = None # (0, 1, 2, 3)
+    devices: Union[tuple, int] = None  # (0, 1, 2, 3)
     limit_val_batches: Optional[int] = (
         4  # val_batch_size * limit_val_batches samples will be logged to wandb and saved locally each val step
     )
