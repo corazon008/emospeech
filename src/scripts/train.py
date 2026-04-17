@@ -70,7 +70,7 @@ def train(config: TrainConfig) -> None:
     trainer.validate(model, dataloaders=val_loader)
     trainer.test(model, dataloaders=test_loader)
 
-    trainer.save_checkpoint(filepath=config.lightning_checkpoint_path.__str__() + "1", weights_only=False)
+    trainer.save_checkpoint(filepath=config.lightning_checkpoint_path.__str__(), weights_only=False)
 
 
 if __name__ == "__main__":

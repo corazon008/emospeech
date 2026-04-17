@@ -113,7 +113,7 @@ EmoSpeech is trained on phoneme sequences. Supported phones can be found in `dat
 For example
 
 ```
-uv run -m src.scripts.inference --sq "S P IY2 K ER1 F AY1 V  T AO1 K IH0 NG W IH0 TH AE1 NG G R IY0 IH0 M OW0 SH AH0 N"
+uv run -m src.scripts.inference -sq "S P IY2 K ER1 F AY1 V  T AO1 K IH0 NG W IH0 TH AE1 NG G R IY0 IH0 M OW0 SH AH0 N"
 ```
 
 If result file is not synthesied, check `inference.log` for OOV phones.
