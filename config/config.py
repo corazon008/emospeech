@@ -124,6 +124,7 @@ class TrainConfig:
     test_wav_files_directory: Path = Path(base_dir) / "app/data/wav"
     test_mos_files_directory: Path = Path(base_dir) / "app/data/mos"
     total_training_steps: int = 2_000
+    nb_epochs: int = 10
     val_each_epoch: int = 1
     val_audio_log_each_step: int = (
         1  # if greater than one will log audio each <n> step, set to save storage
