@@ -9,8 +9,9 @@ from lightning.pytorch.loggers import WandbLogger
 from config.config import TrainConfig
 from src.dataset.dataset import get_dataloader
 from src.models import Generator, TorchSTFT
-from src.models.acoustic_model.fastspeech.lightning_model import \
-    FastSpeechLightning
+from src.models.acoustic_model.fastspeech.lightning_model import (
+    FastSpeechLightning,
+)
 from src.utils.utils import set_up_logger
 from src.utils.vocoder_utils import load_checkpoint
 
@@ -28,7 +29,6 @@ def train(config: TrainConfig) -> None:
     test_loader = get_dataloader(config, "test")
     model = FastSpeechLightning(config, vocoder, stft)
 
-
     Path(config.lightning_checkpoint_path).mkdir(exist_ok=True, parents=True)
     callbacks = ModelCheckpoint(
         dirpath=config.lightning_checkpoint_path,
@@ -41,15 +41,17 @@ def train(config: TrainConfig) -> None:
         enable_version_counter=True,
     )
 
-    progress_bar = TQDMProgressBar(refresh_rate=config.wandb_progress_bar_refresh_rate)
+    progress_bar = TQDMProgressBar(
+        refresh_rate=config.wandb_progress_bar_refresh_rate
+    )
     # wandb_logger.watch(model.model, log_graph=False)
 
     trainer = Trainer(
-        #max_steps=config.total_training_steps,
-        max_epochs=2,
+        # max_steps=config.total_training_steps,
+        max_epochs=config.nb_epochs,
         check_val_every_n_epoch=config.val_each_epoch,
         log_every_n_steps=config.wandb_log_every_n_steps,
-        #logger=wandb_logger,
+        # logger=wandb_logger,
         accelerator="gpu" if config.device == "cuda" else "cpu",
         devices=list(config.devices) if config.devices else "auto",
         callbacks=[callbacks, progress_bar],
@@ -67,7 +69,8 @@ def train(config: TrainConfig) -> None:
         train_dataloaders=train_loader,
         val_dataloaders=val_loader,
         ckpt_path=(
-            Path(config.lightning_checkpoint_path) / config.train_from_checkpoint
+            Path(config.lightning_checkpoint_path)
+            / config.train_from_checkpoint
             if config.train_from_checkpoint
             else None
         ),
@@ -75,7 +78,7 @@ def train(config: TrainConfig) -> None:
     trainer.validate(model, dataloaders=val_loader)
     trainer.test(model, dataloaders=test_loader)
 
-    #trainer.save_checkpoint(filepath=config.lightning_checkpoint_path / "model.ckpt", weights_only=True)
+    # trainer.save_checkpoint(filepath=config.lightning_checkpoint_path / "model.ckpt", weights_only=True)
 
 
 if __name__ == "__main__":
