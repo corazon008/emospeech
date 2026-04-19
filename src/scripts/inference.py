@@ -1,14 +1,17 @@
 import argparse
 import json
 from dataclasses import asdict
+from pathlib import Path
+from typing import Union
 
 import torch
 from lightning import seed_everything
 
 from config.config import TrainConfig
 from src.models import Generator, TorchSTFT
-from src.models.acoustic_model.fastspeech.lightning_model import \
-    FastSpeechLightning
+from src.models.acoustic_model.fastspeech.lightning_model import (
+    FastSpeechLightning,
+)
 from src.utils.utils import crash_with_msg, set_up_logger, write_wav
 from src.utils.vocoder_utils import load_checkpoint, synthesize_wav_from_mel
 
@@ -71,20 +74,40 @@ def inference(config: TrainConfig, args: argparse.Namespace) -> None:
     input_dict = get_input_dict(config, args)
     model_output = model.model(model.device, input_dict)
     predicted_mel_len = model_output["mel_len"][0]
-    predicted_mel_no_padding = model_output["predicted_mel"][0, :predicted_mel_len]
+    predicted_mel_no_padding = model_output["predicted_mel"][
+        0, :predicted_mel_len
+    ]
     generated_wav = synthesize_wav_from_mel(
         predicted_mel_no_padding, model.vocoder, model.stft
     )
     write_wav(args.generated_audio_path, generated_wav, config.sample_rate)
 
 
+def multiply(*args):
+    r = 1
+    for arg in args:
+        r *= arg
+    return r
+
+
 if __name__ == "__main__":
     set_up_logger("inference.log")
     config = TrainConfig()
     parser = argparse.ArgumentParser()
+
+    # Given a sequence phonemes
     parser.add_argument(
         "-sq", "--phone_sequence", help="Sequence of phones for synthesis"
     )
+
+    # Given the phonemes files
+    parser.add_argument(
+        "-pf",
+        "--phones_file",
+        help="Path to a file ended with .txt where each line is a sequence of phones for synthesis. Will be used if --phone_sequence is not specified.",
+        type=str,
+    )
+
     parser.add_argument(
         "-sp",
         "--speaker_id",
@@ -107,4 +130,65 @@ if __name__ == "__main__":
         default="generation_from_phoneme_sequence.wav",
     )
     args = parser.parse_args()
+
+    if args.phone_sequence is None and args.phones_file is None:
+        crash_with_msg(
+            "You should specify either --phone_sequence or --phones_file argument."
+        )
+
+    # Parse the phoneme file if specified
+    if args.phones_file is not None:
+        with open(args.phones_file, "r") as f:
+            phone_sequences = f.read().splitlines()
+
+        # One words can have different phonemes
+        candidates_list: list[Union[str | list[str]]] = []
+        last_word = None
+        for phone_sequence in phone_sequences:
+            word, ph = phone_sequence.split("\t")
+            if last_word != word:
+                candidates_list.append(ph)
+            else:
+                t = candidates_list[-1]
+                if isinstance(t, str):
+                    candidates_list[-1] = [candidates_list[-1], ph]
+                elif isinstance(t, list):
+                    candidates_list[-1].append(ph)
+            last_word = word
+
+        candidates_nb = multiply(
+            *[len(e) if isinstance(e, list) else 1 for e in candidates_list]
+        )
+        print(f"Found {candidates_nb} candidates for the input sequence.")
+        candidates = [""] * candidates_nb
+        for e in candidates_list:
+            if isinstance(e, str):
+                for i in range(candidates_nb):
+                    candidates[i] += e + " "
+            elif isinstance(e, list):
+                for i in range(candidates_nb):
+                    candidates[i] += e[i % len(e)] + " "
+
+        # fiter for valid candidates against valid phones
+        valid_candidates = []
+        with open(config.phones_path, "r") as f:
+            phones_mapping = json.load(f)
+        phone_ids = []
+        for c in candidates:
+            valid = True
+            for p in c.split(" "):
+                try:
+                    phones_mapping[p]
+                except KeyError:
+                    valid = False
+                    break
+            if valid:
+                valid_candidates.append(c)
+
+        print(
+            f"Found {len(valid_candidates)} valid candidates for the input sequence."
+        )
+
+        args.phone_sequence = valid_candidates[0]
+
     inference(config, args)
