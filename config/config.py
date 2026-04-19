@@ -9,7 +9,9 @@ base_dir = Path(__file__).parent.parent
 @dataclass
 class TrainConfig:
     # Preprocess
-    n_threads: int = 16  # n_threads to parallel process utterance
+    n_threads: int = (
+        os.cpu_count() - 1
+    )  # n_threads to parallel process utterance
     include_empty_intervals: bool = (
         True  # if True silence will be loaded from .TextGrid
     )
@@ -103,28 +105,26 @@ class TrainConfig:
     multi_emotion: bool = True
     n_emotions: int = 5
     n_speakers: int = 10
-    train_batch_size: int = 64
-    val_batch_size: int = 32
+    train_batch_size: int = 8
+    val_batch_size: int = 8
     device: str = "cpu"
 
     # Train
     seed: int = 3
-    precision: str = 32
+    precision: str = "16-mixed"
     matmul_precision: str = "high"
     lightning_checkpoint_path: Path = (
-        Path(base_dir) / "app/data/checkpoints/emospeech.ckpt"
+        Path(base_dir) / "app/data/checkpoints/"
     )  # directory to save checkpoints
 
     train_from_checkpoint: Optional[str] = (
         None  # filename in <lightning_checkpoint_path> directory
     )
-    num_workers: int = os.cpu_count() - 1 if os.cpu_count() > 1 else 0
+    num_workers: int = 1
     test_wav_files_directory: Path = Path(base_dir) / "app/data/wav"
     test_mos_files_directory: Path = Path(base_dir) / "app/data/mos"
-    total_training_steps: int = (
-        4  # 234*2*    2 # 234 (step for 1 epochs) * 2 (dont know why put nb step is divided by 2 somewhere) * nb epochs
-    )
-    val_each_epoch: int = 20
+    total_training_steps: int = 2_000
+    val_each_epoch: int = 1
     val_audio_log_each_step: int = (
         1  # if greater than one will log audio each <n> step, set to save storage
     )
@@ -132,8 +132,8 @@ class TrainConfig:
     # Test / Inference
     testing_checkpoint: Path = (
         Path(base_dir)
-        / "app/data/checkpoints/emospeech.ckpt"
-        # / "app/data/emospeech.ckpt"  # "data/deepvk_large_checkpoint/epoch=1079-step=127440.ckpt"
+        # / "app/data/checkpoints/emospeech.ckpt"
+        / "app/data/emospeech.ckpt"  # "data/deepvk_large_checkpoint/epoch=1079-step=127440.ckpt"
     )
     audio_save_path: str = (
         Path(base_dir)

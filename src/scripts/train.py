@@ -29,19 +29,24 @@ def train(config: TrainConfig) -> None:
     model = FastSpeechLightning(config, vocoder, stft)
 
 
-    Path(config.lightning_checkpoint_path.parent).mkdir(exist_ok=True, parents=True)
+    Path(config.lightning_checkpoint_path).mkdir(exist_ok=True, parents=True)
     callbacks = ModelCheckpoint(
         dirpath=config.lightning_checkpoint_path,
+        filename="fs-{step}-{val_loss:.3f}",
         monitor="val_mos/generated_audio_mos_mean",
         save_top_k=config.save_top_k_model_weights,
         mode=config.metric_monitor_mode,
+        save_last=True,
+        every_n_train_steps=2,
+        enable_version_counter=True,
     )
 
     progress_bar = TQDMProgressBar(refresh_rate=config.wandb_progress_bar_refresh_rate)
     # wandb_logger.watch(model.model, log_graph=False)
 
     trainer = Trainer(
-        max_steps=config.total_training_steps,
+        #max_steps=config.total_training_steps,
+        max_epochs=2,
         check_val_every_n_epoch=config.val_each_epoch,
         log_every_n_steps=config.wandb_log_every_n_steps,
         #logger=wandb_logger,
@@ -70,7 +75,7 @@ def train(config: TrainConfig) -> None:
     trainer.validate(model, dataloaders=val_loader)
     trainer.test(model, dataloaders=test_loader)
 
-    trainer.save_checkpoint(filepath=config.lightning_checkpoint_path.__str__(), weights_only=False)
+    #trainer.save_checkpoint(filepath=config.lightning_checkpoint_path / "model.ckpt", weights_only=True)
 
 
 if __name__ == "__main__":

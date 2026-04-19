@@ -59,12 +59,13 @@ def test(config: TrainConfig) -> None:
     vocoder.eval()
     test_loader = get_dataloader(config, "test")
     model = FastSpeechLightning.load_from_checkpoint(
-        config.testing_checkpoint,
+        checkpoint_path=config.testing_checkpoint,
         strict=True,
         config=config,
         vocoder=vocoder,
         stft=stft,
         train=False,
+        weights_only=True,
     )
     model.eval()
     model = model.to(config.device)

@@ -14,7 +14,6 @@ dependencies = [
     "opensmile>=2.4.2",
     "pandas>=1.5.1",
     "pillow>=9.5.0",
-    #"pip-system-certs>=4.0",
     "pyrallis>=0.3.1",
     "pyworld>=0.3.0",
     "pyyaml>=6.0",
@@ -23,32 +22,52 @@ dependencies = [
     "seaborn>=0.12.2",
     "soundfile>=0.12.1",
     "tgt>=1.4.4",
-    "torch>=2.8.0",
-    "torchaudio>=2.11.0",
-    "torchcodec>=0.9.1",
     "torchmetrics>=0.11.4",
-    "torchvision>=0.23.0",
     "tqdm>=4.64.1",
     "wandb>=0.16",
 ]
 
-[tool.uv.sources]
-torch = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
-    { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
+
+[project.optional-dependencies]
+cpu = [
+  "torch>=2.11.0",
+  "torchvision>=0.24.1",
+  "torchaudio>=2.11.0",
+  "torchcodec>=0.9.1",
 ]
-torchaudio = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
-    { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
-]
-torchvision = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
-    { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
-]
-torchcodec = [
-    { index = "pytorch-cpu", marker = "sys_platform == 'linux'"},
+gpu = [
+  "torch>=2.11.0",
+  "torchvision>=0.24.1",
+  "torchaudio>=2.11.0",
+  "torchcodec>=0.9.1",
 ]
 
+[tool.uv]
+conflicts = [
+  [
+    { extra = "cpu" },
+    { extra = "gpu" },
+  ],
+]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cpu", extra = "cpu" },
+  { index = "pytorch-gpu", extra = "gpu" },
+]
+torchvision = [
+  { index = "pytorch-cpu", extra = "cpu" },
+  { index = "pytorch-gpu", extra = "gpu" },
+]
+torchaudio = [
+  { index = "pytorch-cpu", extra = "cpu" },
+  { index = "pytorch-gpu", extra = "gpu" },
+]
+torchcodec = [
+  { index = "pytorch-cpu", extra = "cpu" },
+  { index = "pytorch-gpu", extra = "gpu", marker = "sys_platform == 'linux'" },
+  { index = "Pypi", extra = "gpu", marker = "sys_platform == 'win32'" },
+]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
@@ -56,10 +75,11 @@ url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 [[tool.uv.index]]
-name = "pytorch-cu130"
+name = "pytorch-gpu"
 url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
-
-[tool.uv.extra-build-dependencies]
-      pathtools = ["imp"]
+[[tool.uv.index]]
+name = "Pypi"
+url = "https://pypi.org/simple"
+explicit = true
