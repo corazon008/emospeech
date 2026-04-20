@@ -4,7 +4,7 @@
 
 ## How to run
 
-²### Build env
+### Build env
 
 You can build an environment with `uv`.
 
@@ -16,13 +16,13 @@ If you don't have uv installed, please find the installation instructions for yo
 
 For CPU-only:
 
-```
+```bash
 uv sync --extra cpu
 ```
 
 For GPU:
 
-```
+```bash
 uv sync --extra gpu
 ```
 
@@ -30,13 +30,13 @@ uv sync --extra gpu
 
 We used data of 10 English Speakers from [ESD dataset](https://github.com/HLTSingapore/Emotional-Speech-Data). To download all `.wav`, `.txt` files along with `.TextGrid` files created using [MFA](https://github.com/MontrealCorpusTools/mfa-models):
 
-```
+```bash
 uv run --extra cpu download_data.py
 ```
 
 To train a model we need precomputed durations, energy, pitch and eGeMap features. From `src` directory run:
 
-```
+```bash
 uv run --extra cpu -m src.preprocess.preprocess
 ```
 
@@ -72,7 +72,7 @@ This is how your `app` folder should look like:
 1. Configure arguments in `config/config.py`.
 2. Run:
 
-```
+```bash
 uv run --extra cpu -m src.scripts.train
 ```
 
@@ -83,7 +83,7 @@ Testing is implemented on testing subset of ESD dataset. To synthesize audio and
 1. Configure arguments in `config/config.py` under `Inference` section.
 2. Run :
 
-```
+```bash
 uv run --extra cpu -m src.scripts.test
 ```
 
@@ -128,7 +128,7 @@ echo "Your sentence to synthesize goes here." > app/data/graphemes.txt
 Run `uv run --extra cpu -m src.scripts.inference`, specifying arguments:
 
 | **Аrgument** | **Meaning**                          | **Possible Values**                                                 | **Default value**                              |
-| ------------ | ------------------------------------ | ------------------------------------------------------------------- |------------------------------------------------|
+| ------------ | ------------------------------------ | ------------------------------------------------------------------- | ---------------------------------------------- |
 | `-sq`        | Phoneme sequence to synthesisze      | Find in `data/phones.json`.                                         | **Not set, required argument if -pf not set.** |
 | `-pf`        | Phoneme sequence file to synthesisze | `app/data/phoneme.txt`.                                             | **Not set, required argument if -sq not set.** |
 | `-emo`       | Id of desired voice emotion          | 0: neutral, 1: angry, 2: happy, 3: sad, 4: surprise.                | 1                                              |
@@ -142,7 +142,7 @@ uv run --extra cpu -m src.scripts.inference -sq "S P IY2 K ER1 F AY1 V  T AO1 K 
 ```
 
 ```bash
-uv run --extra cpu -m src.scripts.inference -pf app/data/phoneme.txt  
+uv run --extra cpu -m src.scripts.inference -pf app/data/phoneme.txt
 ```
 
 If result file is not synthesied, check `inference.log` for OOV phones.
